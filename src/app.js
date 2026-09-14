@@ -1,17 +1,13 @@
 import './style.css';
 import './games/calm-match/style.css';
 import { mountGame, jelly } from './games/calm-match/view.js';
+import { preloadGameAssets, preloadGameModules, registerIdlePreload } from './games/calm-match/preload.js';
 
 const home = document.querySelector('.playground');
 const game = document.createElement('main');
 game.className = 'calm-game';
 game.hidden = true;
 document.body.append(game);
-const entry = document.createElement('a');
-entry.href = '/games/calm-match';
-entry.className = 'calm-entry';
-entry.innerHTML = '<span>消消气</span><small>玩一局，准点下班 ↗</small>';
-document.querySelector('.settings-heading').after(entry);
 const overlay = document.createElement('div');
 overlay.className = 'calm-transition';
 overlay.hidden = true;
@@ -21,6 +17,16 @@ let homeModule;
 let disposeGame = () => {};
 let navigation = 0;
 let timer;
+
+registerIdlePreload();
+
+document.addEventListener('pointerover', event => {
+  const link = event.target.closest('a[href*="/games/calm-match"]');
+  if (link) {
+    preloadGameModules();
+    preloadGameAssets({ timeoutMs: 3000 });
+  }
+}, { passive: true });
 
 function route() {
   navigation++;
@@ -36,6 +42,7 @@ function route() {
   if (isGame) {
     document.querySelector('#loading').hidden = true;
     document.title = '消消气 · softie';
+    preloadGameAssets({ timeoutMs: 3000 });
     disposeGame = mountGame(game);
   } else {
     document.title = 'softie · 软乎乎。';
@@ -56,8 +63,15 @@ document.addEventListener('click', event => {
   if (url.pathname === '/games/calm-match' && !saved && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const token = ++navigation;
     overlay.hidden = false;
-    timer = setTimeout(() => { if (token === navigation) go(); }, 1200);
-  } else go();
+    const minWait = new Promise(resolve => { timer = setTimeout(resolve, 600); });
+    const assetWait = preloadGameAssets({ timeoutMs: 2500 });
+    Promise.all([minWait, assetWait]).then(() => {
+      if (token === navigation) go();
+    });
+  } else {
+    preloadGameAssets({ timeoutMs: 2000 });
+    go();
+  }
 });
 window.addEventListener('popstate', route);
 route();
