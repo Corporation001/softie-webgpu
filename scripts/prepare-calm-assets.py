@@ -1,3 +1,4 @@
+import shutil
 """Slice transparent props from a single sprite sheet and export optimized game assets."""
 from pathlib import Path
 from PIL import Image
@@ -22,7 +23,7 @@ coffee_sprite.alpha_composite(
     coffee_item, ((160 - coffee_item.width) // 2, (160 - coffee_item.height) // 2)
 )
 coffee_out = destination / "coffee.webp"
-coffee_sprite.save(coffee_out, "WEBP", quality=88, method=6)
+coffee_sprite.save(coffee_out, "WEBP", quality=100, method=6)
 print(f"{coffee_out.relative_to(root)}: 160 × 160, {coffee_out.stat().st_size} bytes")
 
 # Plaster
@@ -35,7 +36,7 @@ plaster_sprite.alpha_composite(
     plaster_item, ((160 - plaster_item.width) // 2, (160 - plaster_item.height) // 2)
 )
 plaster_out = destination / "plaster.webp"
-plaster_sprite.save(plaster_out, "WEBP", quality=88, method=6)
+plaster_sprite.save(plaster_out, "WEBP", quality=100, method=6)
 print(f"{plaster_out.relative_to(root)}: 160 × 160, {plaster_out.stat().st_size} bytes")
 
 # Badge (Worker ID card)
@@ -48,14 +49,22 @@ badge_sprite.alpha_composite(
     badge_item, ((160 - badge_item.width) // 2, (160 - badge_item.height) // 2)
 )
 badge_out = destination / "badge.webp"
-badge_sprite.save(badge_out, "WEBP", quality=88, method=6)
+badge_sprite.save(badge_out, "WEBP", quality=100, method=6)
 print(f"{badge_out.relative_to(root)}: 160 × 160, {badge_out.stat().st_size} bytes")
 
-# 2. Process background image
-bg_raw = Image.open(source_dir / "background-raw.png").convert("RGB")
-bg_out = destination / "background.webp"
-bg_raw.save(bg_out, "WEBP", quality=82, method=6)
-print(f"{bg_out.relative_to(root)}: {bg_raw.size}, {bg_out.stat().st_size} bytes")
+# 2. Process background images (separate desktop and mobile)
+bg_d_raw = Image.open(source_dir / "background-desktop-raw.png").convert("RGB")
+bg_d_out = destination / "background-desktop.webp"
+bg_d_raw.save(bg_d_out, "WEBP", quality=100, method=6)
+print(f"{bg_d_out.relative_to(root)}: {bg_d_raw.size}, {bg_d_out.stat().st_size} bytes")
+
+# Keep background.webp for compatibility
+shutil.copyfile(bg_d_out, destination / "background.webp")
+
+bg_m_raw = Image.open(source_dir / "background-mobile-raw.png").convert("RGB")
+bg_m_out = destination / "background-mobile.webp"
+bg_m_raw.save(bg_m_out, "WEBP", quality=100, method=6)
+print(f"{bg_m_out.relative_to(root)}: {bg_m_raw.size}, {bg_m_out.stat().st_size} bytes")
 
 # 3. Process UI button icons from a single sheet
 btn_sheet = Image.open(source_dir / "buttons-sheet.png").convert("RGBA")
@@ -76,7 +85,7 @@ for name, item in btn_items:
     sprite = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
     sprite.alpha_composite(cropped, ((120 - cropped.width) // 2, (120 - cropped.height) // 2))
     out_path = destination / f"{name}.webp"
-    sprite.save(out_path, "WEBP", quality=90, method=6)
+    sprite.save(out_path, "WEBP", quality=100, method=6)
     print(f"{out_path.relative_to(root)}: 120 × 120, {out_path.stat().st_size} bytes")
 
 # 4. Process header title logo & countdown clock badge
@@ -92,7 +101,7 @@ logo_w = 320
 logo_h = int(logo_item.height * (logo_w / logo_item.width))
 logo_resized = logo_item.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
 logo_out = destination / "logo.webp"
-logo_resized.save(logo_out, "WEBP", quality=90, method=6)
+logo_resized.save(logo_out, "WEBP", quality=100, method=6)
 print(f"{logo_out.relative_to(root)}: {logo_resized.size}, {logo_out.stat().st_size} bytes")
 
 # Clock badge
@@ -103,7 +112,7 @@ clock_item.thumbnail((108, 108), Image.Resampling.LANCZOS)
 clock_sprite = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
 clock_sprite.alpha_composite(clock_item, ((120 - clock_item.width) // 2, (120 - clock_item.height) // 2))
 clock_out = destination / "clock.webp"
-clock_sprite.save(clock_out, "WEBP", quality=90, method=6)
+clock_sprite.save(clock_out, "WEBP", quality=100, method=6)
 print(f"{clock_out.relative_to(root)}: 120 × 120, {clock_out.stat().st_size} bytes")
 
 # 5. Process sound toggle and restart button icons
@@ -125,5 +134,5 @@ for name, item in tool_btn_items:
     sprite = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
     sprite.alpha_composite(cropped, ((120 - cropped.width) // 2, (120 - cropped.height) // 2))
     out_path = destination / f"{name}.webp"
-    sprite.save(out_path, "WEBP", quality=90, method=6)
+    sprite.save(out_path, "WEBP", quality=100, method=6)
     print(f"{out_path.relative_to(root)}: 120 × 120, {out_path.stat().st_size} bytes")
