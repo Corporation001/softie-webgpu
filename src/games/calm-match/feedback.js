@@ -38,12 +38,12 @@ export function createFeedback() {
       if (now - last < 35) return;
       last = now;
       tone(chainFrequency(count));
-      vibrate(count >= 7 ? 14 : 8);
+      vibrate(count >= 7 ? [18, 16, 18] : 18);
     },
     pop(count) {
       tone(180, 0, .22, .3);
       for (let i = 0; i <= chainTier(count); i++) tone([523.25, 659.25, 783.99][i], .025 + i * .035, .2, .12);
-      vibrate(count >= 7 ? [15, 30, 20] : 12);
+      vibrate(count >= 7 ? [24, 30, 24] : 22);
     },
     dispose() {
       for (const { osc, gain } of voices) { osc.onended = null; osc.stop(); osc.disconnect(); gain.disconnect(); }

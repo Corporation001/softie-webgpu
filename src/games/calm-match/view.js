@@ -1,3 +1,4 @@
+import { RageMeter } from '../../rage-meter.js';
 import { COLS, ROWS, TARGET, SAVE_KEY, newGame, validSave, ensureMove, findMove, extendPath, clearPath } from './model.js';
 import { sound } from '../../sound.js';
 import { chainTier, createFeedback } from './feedback.js';
@@ -42,7 +43,7 @@ export function mountGame(root) {
         <div class="match-stage"><div class="match-board-wrap"><div class="match-board" role="group" aria-label="五列六行棋盘；拖动连接同色，或方向键移动、空格选择、回车消除"></div><svg class="match-thread" viewBox="0 0 500 600" preserveAspectRatio="none" aria-hidden="true"><polyline /></svg></div></div>
         <p class="game-help">同色连起来 · 斜着也可以 · 松手噗叽消除</p>
       </section>
-      <aside class="game-sidebar"><p class="game-eyebrow"><img class="clock-icon" src="/games/calm-match/clock.webp" width="40" height="40" alt="" draggable="false"><span>下班倒计气</span></p><div class="game-rage"><strong></strong><span>怨气值</span></div><progress max="90" value="90" aria-label="剩余怨气"></progress><p class="game-goal">消除 90 只软乎乎，清空今日怨气。</p><dl class="game-stats"><div><dt>已消除</dt><dd class="stat-cleared"></dd></div><div><dt>最长连线</dt><dd class="stat-best"></dd></div><div><dt>消除次数</dt><dd class="stat-moves"></dd></div></dl><div class="game-tools"><button class="game-hint">给点提示</button><button class="game-sound" type="button" aria-label="切换音效"></button><button class="game-restart" type="button" aria-label="重新开始"><img class="game-tool-img" src="/games/calm-match/btn-restart.webp" width="48" height="48" alt="" draggable="false"><span class="game-tool-label">重新开始</span></button></div><p class="game-save-note">进度自动保存，随时回来。</p></aside>
+      <aside class="game-sidebar"><p class="game-eyebrow"><img class="clock-icon" src="/games/calm-match/clock.webp" width="40" height="40" alt="" draggable="false"><span>下班倒计气</span></p><div class="rage-meter-hud game-rage-hud" data-mood="max" aria-label="打工怨气进度条" title="打工怨气槽"><div class="rage-hud-avatar-wrap"><div class="rage-hud-avatar" data-state="max" aria-hidden="true"><svg class="rage-avatar-svg" viewBox="0 0 36 36" fill="none"><path class="rage-avatar-body" d="M18 4c-4.4 0-4.7 5.4-7.7 7.4C5.7 14 3.8 18.2 3.8 22.8c0 6.4 5.7 9.5 14.2 9.5s14.2-3.1 14.2-9.5c0-4.6-1.9-8.7-6.5-11.6C22.7 9.4 22.4 4 18 4Z" fill="currentColor" /><circle class="rage-avatar-blush" cx="10" cy="23" r="1.8" fill="#f472b6" opacity="0.65" /><circle class="rage-avatar-blush" cx="26" cy="23" r="1.8" fill="#f472b6" opacity="0.65" /><g class="rage-avatar-eyes"><circle class="rage-eye rage-eye-left" cx="13" cy="20" r="1.7" fill="#1c1917" /><circle class="rage-eye rage-eye-right" cx="23" cy="20" r="1.7" fill="#1c1917" /></g><path class="rage-avatar-mouth" d="M16 23.5q2 2 4 0" stroke="#1c1917" stroke-width="1.6" stroke-linecap="round" fill="none" /><path class="rage-avatar-cross" d="M22 10.5q2-1.5 2 2.5m-3-1q2.5 0 2.5 3m-2.5-3.5q1.5-2 3.5 0" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round" fill="none" /></svg></div></div><div class="rage-hud-track-wrap"><div class="rage-hud-header"><span class="rage-hud-badge">MAX 怨气爆表!</span><span class="rage-hud-percent">100%</span></div><div class="rage-hud-bar-capsule"><canvas class="rage-hud-canvas" width="240" height="32" aria-hidden="true"></canvas><div class="rage-hud-sparkles" aria-hidden="true"></div></div></div></div><div class="game-rage sr-only" hidden><strong>100%</strong><span>怨气值</span></div><progress class="sr-only" max="90" value="90" aria-label="剩余怨气" hidden></progress><p class="game-goal">消除 90 只软乎乎，清空今日怨气。</p><dl class="game-stats"><div><dt>已消除</dt><dd class="stat-cleared"></dd></div><div><dt>最长连线</dt><dd class="stat-best"></dd></div><div><dt>消除次数</dt><dd class="stat-moves"></dd></div></dl><div class="game-tools"><button class="game-hint" type="button" aria-label="给点提示"></button><button class="game-sound" type="button" aria-label="切换音效"></button><button class="game-restart" type="button" aria-label="重新开始"><img class="game-tool-img" src="/games/calm-match/btn-restart.webp" width="48" height="48" alt="" draggable="false"><span class="game-tool-label">重新开始</span></button></div><p class="game-save-note">进度自动保存，随时回来。</p></aside>
     </div>
     <dialog class="game-win"><div>${jelly(0)}</div><p class="game-eyebrow">OFF DUTY. ON CLOUD NINE.</p><h2>怨气清空，下班！</h2><p class="win-detail"></p><button class="game-again">再消一局</button><a href="/">回去揉揉软乎乎 ↗</a></dialog>
     <dialog class="game-confirm"><h2>重新开始这一局？</h2><p>当前消除进度会重置。</p><button class="confirm-reset">重新开始</button><button class="cancel-reset">继续玩</button></dialog>
@@ -52,20 +53,44 @@ export function mountGame(root) {
   $('.game-hint').setAttribute('aria-label', '给点提示');
   $('.game-hint').title = '找一组可消除的软乎乎';
   $('.game-help').insertAdjacentHTML('afterend', '<div class="match-powerups" aria-label="每局各一次的解压道具"><button data-tool="coffee" aria-label="冰美式，清除一列" aria-pressed="false"><img src="/games/calm-match/coffee.webp" width="160" height="160" alt="" draggable="false"><b class="tool-stock">1</b><span class="tool-name">冰美式</span></button><button data-tool="plaster" aria-label="创可贴，清除一只" aria-pressed="false"><img src="/games/calm-match/plaster.webp" width="160" height="160" alt="" draggable="false"><b class="tool-stock">1</b><span class="tool-name">创可贴</span></button><button data-tool="badge" aria-label="工牌，同色全消" aria-pressed="false"><img src="/games/calm-match/badge.webp" width="160" height="160" alt="" draggable="false"><b class="tool-stock">1</b><span class="tool-name">工牌</span></button></div>');
-  $('.game-board-heading').append($('.game-hint'));
   const mobile = matchMedia('(max-width: 899px)');
   const stats = $('.game-stats'), controls = $('.game-tools');
   function arrangeMenu() {
-    const target = mobile.matches ? $('.options-content') : $('.game-sidebar');
-    target.append(stats, controls);
     if (!mobile.matches) $('.game-options').close();
     if (mobile.matches) {
+      $('.options-content').append(stats, controls);
       $('.game-story').append($('.game-hint'));
+      $('.game-hint').innerHTML = controlIcon('hint');
     } else {
-      $('.game-board-heading').append($('.game-hint'));
+      const note = $('.game-sidebar .game-save-note');
+      if (note) note.before(stats, controls);
+      else $('.game-sidebar').append(stats, controls);
+      $('.game-tools').prepend($('.game-hint'));
+      $('.game-hint').innerHTML = `<img class="game-tool-img" src="${controlImages.hint}" width="48" height="48" alt="" draggable="false"><span class="game-tool-label">给点提示</span>`;
     }
   }
   arrangeMenu(); listen(mobile, 'change', arrangeMenu);
+  const rageContainer = $('.game-rage-hud');
+  const rageMeter = new RageMeter({ containerId: rageContainer, showMaxPercent: false });
+  let currentAnger = Math.max(0, (TARGET - state.cleared) / TARGET);
+  let currentMood = currentAnger >= 0.85 ? 'max' : currentAnger >= 0.50 ? 'rage' : currentAnger >= 0.20 ? 'annoyed' : 'chill';
+  let badgeText = currentAnger >= 0.85 ? 'MAX 怨气爆表!' : currentAnger >= 0.50 ? '暴怒升温' : currentAnger >= 0.20 ? '有点上火' : currentAnger > 0 ? '快消完啦' : '怨气已清空!';
+  let rageAnimId = null;
+  let lastRageTime = performance.now();
+
+  function rageLoop(now) {
+    if (disposed) return;
+    const dt = Math.min((now - lastRageTime) / 1000, 0.1);
+    lastRageTime = now;
+    rageMeter.update(dt, currentAnger, currentMood, false);
+    if (rageMeter.badge && rageMeter.badge.textContent !== badgeText) {
+      rageMeter.badge.textContent = badgeText;
+    }
+    rageAnimId = requestAnimationFrame(rageLoop);
+  }
+  rageAnimId = requestAnimationFrame(rageLoop);
+  const onWindowResize = () => rageMeter.resize();
+  window.addEventListener('resize', onWindowResize);
   const board = $('.match-board'), line = $('.match-thread polyline'), win = $('.game-win');
   const message = text => { $('.game-message').textContent = text; };
   const companion = $('.game-companion');
@@ -105,6 +130,9 @@ export function mountGame(root) {
     if (disposed) return;
     const scene = await createJellyBoard(board, state.board);
     if (disposed) { scene.dispose(); return; }
+    if (scene?.renderer?.backend?.device) {
+      rageMeter.setDevice(scene.renderer.backend.device);
+    }
     pendingBoard = scene;
     if (!busy) activateBoard();
   }).catch(error => {
@@ -136,8 +164,28 @@ export function mountGame(root) {
         if (falls[i]) cell.animate([{ transform: `translateY(-${Math.min(falls[i], ROWS) * 100}%)`, opacity: 0 }, { transform: 'translateY(5%)', opacity: 1, offset: .8 }, { transform: 'translateY(0)' }], { duration: 380, easing: 'ease-out' });
       });
     }
-    $('.game-rage strong').textContent = `${Math.ceil((TARGET - state.cleared) / TARGET * 100)}%`;
-    $('progress').value = TARGET - state.cleared;
+        const remaining = Math.max(0, TARGET - state.cleared);
+    currentAnger = remaining / TARGET;
+    if (currentAnger >= 0.85) {
+      currentMood = 'max';
+      badgeText = 'MAX 怨气爆表!';
+    } else if (currentAnger >= 0.50) {
+      currentMood = 'rage';
+      badgeText = '暴怒升温';
+    } else if (currentAnger >= 0.20) {
+      currentMood = 'annoyed';
+      badgeText = '有点上火';
+    } else if (currentAnger > 0) {
+      currentMood = 'chill';
+      badgeText = '快消完啦';
+    } else {
+      currentMood = 'chill';
+      badgeText = '怨气已清空!';
+    }
+    const rageStrong = $('.game-rage strong');
+    if (rageStrong) rageStrong.textContent = `${Math.ceil(currentAnger * 100)}%`;
+    const prog = $('progress');
+    if (prog) prog.value = remaining;
     $('.stat-cleared').textContent = state.cleared;
     $('.stat-best').textContent = state.best;
     $('.stat-moves').textContent = state.moves;
@@ -187,6 +235,7 @@ export function mountGame(root) {
     line.setAttribute('points', '');
     state = result.state; save();
     sound.playSquish();
+    rageMeter.pulse(count >= 6 ? 1.6 : count >= 4 ? 1.2 : 0.85);
     later(() => feedback.pop(count), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : jellyBoard ? 430 : 100);
     later(() => {
       path = []; finger = null; root.dataset.chainTier = 0; root.classList.remove('game-linking'); render(result.falls);
@@ -272,12 +321,40 @@ export function mountGame(root) {
   listen($('.game-sound'), 'click', () => { sound.toggle(); updateSound(); });
   listen($('.game-menu'), 'click', () => { if (!busy) { cancel(); $('.game-options').showModal(); } });
   listen($('.close-options'), 'click', () => $('.game-options').close());
-  function reset() { if (busy) return; cancel(); state = newGame(); save(); win.close(); $('.game-confirm').close(); render(); message('新的一局，慢慢来。'); }
+  function reset() {
+    if (busy) return;
+    cancel();
+    state = newGame();
+    save();
+    win.close();
+    $('.game-confirm').close();
+    currentAnger = 1.0;
+    currentMood = 'max';
+    badgeText = 'MAX 怨气爆表!';
+    rageMeter.reset();
+    rageMeter.pulse(1.0);
+    render();
+    message('新的一局，慢慢来。');
+  }
   listen($('.game-restart'), 'click', () => { if (!busy) { cancel(); $('.game-options').close(); $('.game-confirm').showModal(); } });
   listen($('.cancel-reset'), 'click', () => $('.game-confirm').close());
   listen($('.confirm-reset'), 'click', reset);
   listen($('.game-again'), 'click', reset);
   listen(win, 'cancel', e => e.preventDefault());
   render(); save(); message(restored ? '接着上次的进度，慢慢消。' : '从任意一只开始，连起 3 只同色伙伴。');
-  return () => { disposed = true; cancel(); save(); timers.forEach(clearTimeout); feedback.dispose(); events.abort(); jellyBoard?.dispose(); pendingBoard?.dispose(); companionScene?.dispose(); root.replaceChildren(); };
+  return () => {
+    disposed = true;
+    cancel();
+    save();
+    cancelAnimationFrame(rageAnimId);
+    window.removeEventListener('resize', onWindowResize);
+    rageMeter.dispose();
+    timers.forEach(clearTimeout);
+    feedback.dispose();
+    events.abort();
+    jellyBoard?.dispose();
+    pendingBoard?.dispose();
+    companionScene?.dispose();
+    root.replaceChildren();
+  };
 }

@@ -161,12 +161,16 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
 `;
 
 export class RageMeter {
-  constructor({ containerId = 'rage-meter-hud', device = null } = {}) {
-    this.container = typeof document !== 'undefined' ? document.getElementById(containerId) : null;
+  constructor({ containerId = 'rage-meter-hud', device = null, showMaxPercent = false, isStatic = false } = {}) {
+    this.container = typeof document !== 'undefined'
+      ? (typeof containerId === 'string' ? document.getElementById(containerId) : containerId)
+      : null;
     this.canvas = this.container ? this.container.querySelector('.rage-hud-canvas') : null;
     this.avatar = this.container ? this.container.querySelector('.rage-hud-avatar') : null;
     this.badge = this.container ? this.container.querySelector('.rage-hud-badge') : null;
     this.percentEl = this.container ? this.container.querySelector('.rage-hud-percent') : null;
+    this.showMaxPercent = showMaxPercent;
+    this.isStatic = isStatic || Boolean(this.container?.classList?.contains('game-rage-hud'));
 
     this.device = device;
     this.gpuContext = null;
@@ -330,13 +334,17 @@ export class RageMeter {
     this.container.dataset.mood = this.isSleeping ? 'sleepy' : isMax ? 'max' : this.mood;
     this.container.classList.toggle('is-max-rage', isMax);
 
-    // Apply spring squash & stretch (preserving horizontal centering)
-    this.container.style.transform = `translateX(var(--rage-hud-offset, -50%)) scale(${this.scaleX.toFixed(3)}, ${this.scaleY.toFixed(3)})`;
+    // Apply spring squash & stretch (preserving horizontal centering for absolute HUD, in-place for static HUD)
+    if (this.isStatic) {
+      this.container.style.transform = `scale(${this.scaleX.toFixed(3)}, ${this.scaleY.toFixed(3)})`;
+    } else {
+      this.container.style.transform = `translateX(var(--rage-hud-offset, -50%)) scale(${this.scaleX.toFixed(3)}, ${this.scaleY.toFixed(3)})`;
+    }
 
     // Update percent text
     if (this.percentEl) {
       const pct = Math.round(this.displayProgress * 100);
-      this.percentEl.textContent = isMax ? 'MAX!' : `${pct}%`;
+      this.percentEl.textContent = (isMax && this.showMaxPercent) ? 'MAX!' : `${pct}%`;
     }
 
     // Update avatar expression
