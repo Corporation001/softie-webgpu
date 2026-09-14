@@ -192,7 +192,7 @@ export function mountGame(root) {
     updateSound();
     if (state.cleared === TARGET) {
       $('.win-detail').textContent = `用了 ${state.moves} 次消除，最长连起 ${state.best} 只。今天辛苦啦。`;
-      if (!win.open) win.showModal();
+      openDialog(win);
     }
   }
   function highlight() {
@@ -318,16 +318,42 @@ export function mountGame(root) {
     };
     message(next ? `${toolTips[next]}；再次点击道具取消。` : '道具已收好，继续连线吧。');
   }));
+  function openDialog(dialog) {
+    if (!dialog) return;
+    dialog.classList.remove('is-closing');
+    if (!dialog.open) dialog.showModal();
+  }
+  function closeDialog(dialog, onClosed) {
+    if (!dialog || !dialog.open) { onClosed?.(); return; }
+    if (dialog.classList.contains('is-closing') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      dialog.classList.remove('is-closing');
+      dialog.close();
+      onClosed?.();
+      return;
+    }
+    dialog.classList.add('is-closing');
+    let timer = null;
+    const onEnd = e => {
+      if (e && e.target !== dialog) return;
+      clearTimeout(timer);
+      dialog.removeEventListener('animationend', onEnd);
+      dialog.classList.remove('is-closing');
+      if (dialog.open) dialog.close();
+      onClosed?.();
+    };
+    timer = setTimeout(onEnd, 260);
+    dialog.addEventListener('animationend', onEnd);
+  }
   listen($('.game-sound'), 'click', () => { sound.toggle(); updateSound(); });
-  listen($('.game-menu'), 'click', () => { if (!busy) { cancel(); $('.game-options').showModal(); } });
-  listen($('.close-options'), 'click', () => $('.game-options').close());
+  listen($('.game-menu'), 'click', () => { if (!busy) { cancel(); openDialog($('.game-options')); } });
+  listen($('.close-options'), 'click', () => closeDialog($('.game-options')));
   function reset() {
     if (busy) return;
     cancel();
     state = newGame();
     save();
-    win.close();
-    $('.game-confirm').close();
+    closeDialog(win);
+    closeDialog($('.game-confirm'));
     currentAnger = 1.0;
     currentMood = 'max';
     badgeText = 'MAX 怨气爆表!';
@@ -336,11 +362,17 @@ export function mountGame(root) {
     render();
     message('新的一局，慢慢来。');
   }
-  listen($('.game-restart'), 'click', () => { if (!busy) { cancel(); $('.game-options').close(); $('.game-confirm').showModal(); } });
-  listen($('.cancel-reset'), 'click', () => $('.game-confirm').close());
+  listen($('.game-restart'), 'click', () => { if (!busy) { cancel(); closeDialog($('.game-options'), () => openDialog($('.game-confirm'))); } });
+  listen($('.cancel-reset'), 'click', () => closeDialog($('.game-confirm')));
   listen($('.confirm-reset'), 'click', reset);
   listen($('.game-again'), 'click', reset);
   listen(win, 'cancel', e => e.preventDefault());
+  for (const d of [$('.game-options'), $('.game-confirm')]) {
+    listen(d, 'cancel', e => {
+      e.preventDefault();
+      closeDialog(d);
+    });
+  }
   render(); save(); message(restored ? '接着上次的进度，慢慢消。' : '从任意一只开始，连起 3 只同色伙伴。');
   return () => {
     disposed = true;

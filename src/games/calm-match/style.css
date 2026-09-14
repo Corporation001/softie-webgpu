@@ -137,6 +137,82 @@
   background: #3b504660;
   backdrop-filter: blur(8px);
 }
+
+/* Unified spring entrance and exit animations for all dialogs */
+.game-options[open],
+.game-confirm[open],
+.game-win[open] {
+  animation: calm-dialog-spring-in 0.36s cubic-bezier(0.34, 1.45, 0.7, 1) both;
+  transform-origin: center center;
+}
+.game-options[open]::backdrop,
+.game-confirm[open]::backdrop,
+.game-win[open]::backdrop {
+  animation: calm-dialog-backdrop-in 0.28s ease both;
+}
+.game-options.is-closing,
+.game-confirm.is-closing,
+.game-win.is-closing {
+  animation: calm-dialog-spring-out 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+.game-options.is-closing::backdrop,
+.game-confirm.is-closing::backdrop,
+.game-win.is-closing::backdrop {
+  animation: calm-dialog-backdrop-out 0.22s ease forwards !important;
+  pointer-events: none !important;
+}
+
+@keyframes calm-dialog-spring-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.72) translateY(18px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.045) translateY(-3px);
+  }
+  80% {
+    transform: scale(0.985) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes calm-dialog-spring-out {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-2px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.72) translateY(16px);
+  }
+}
+
+@keyframes calm-dialog-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes calm-dialog-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 .game-options h2 {
   font-size: 22px;
   margin: 0 0 6px;
@@ -1397,7 +1473,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .calm-game *,
-  .calm-transition * {
+  .calm-transition *,
+  dialog,
+  dialog::backdrop {
     animation: none !important;
     transition: none !important;
   }
