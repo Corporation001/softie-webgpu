@@ -46,7 +46,7 @@ export function mountGame(root) {
     </div>
     <dialog class="game-win"><div>${jelly(0)}</div><p class="game-eyebrow">OFF DUTY. ON CLOUD NINE.</p><h2>怨气清空，下班！</h2><p class="win-detail"></p><button class="game-again">再消一局</button><a href="/">回去揉揉软乎乎 ↗</a></dialog>
     <dialog class="game-confirm"><h2>重新开始这一局？</h2><p>当前消除进度会重置。</p><button class="confirm-reset">重新开始</button><button class="cancel-reset">继续玩</button></dialog>
-    <dialog class="game-options" aria-label="游戏菜单"><h2>歇一小会儿</h2><p>连起至少 3 只同色软乎乎，斜着也可以。<br>点选道具，再点棋盘使用；再点道具可取消。</p><div class="options-content"></div><button class="close-options">继续消消气</button></dialog>`;
+    <dialog class="game-options" aria-label="游戏菜单"><h2>歇一小会儿</h2><p>连起至少 3 只同色软乎乎，斜着也可以。<br>点选道具，再点棋盘使用；再点道具可取消。</p><div class="options-content"></div><button class="close-options" type="button" aria-label="继续消消气"><img class="close-options-img" src="/games/calm-match/btn-resume.webp" width="240" height="90" alt="继续消消气" draggable="false"></button></dialog>`;
   const $ = s => root.querySelector(s);
   $('.game-hint').innerHTML = controlIcon('hint');
   $('.game-hint').setAttribute('aria-label', '给点提示');

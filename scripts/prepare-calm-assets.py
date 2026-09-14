@@ -88,6 +88,27 @@ for name, item in btn_items:
     sprite.save(out_path, "WEBP", quality=100, method=6)
     print(f"{out_path.relative_to(root)}: 120 × 120, {out_path.stat().st_size} bytes")
 
+# 6. Process options modal dialog frame & resume button from a single sheet
+options_sheet = Image.open(source_dir / "options-sheet.png").convert("RGBA")
+ow, oh = options_sheet.size
+osplit = (802 + 861) // 2
+
+# Dialog panel frame
+panel_crop = options_sheet.crop((0, 0, osplit, oh))
+panel_bbox = panel_crop.getchannel("A").point(lambda v: 255 if v > 5 else 0).getbbox()
+panel_item = panel_crop.crop(panel_bbox)
+panel_out = destination / "dialog-panel.webp"
+panel_item.save(panel_out, "WEBP", quality=100, method=6)
+print(f"{panel_out.relative_to(root)}: {panel_item.size}, {panel_out.stat().st_size} bytes")
+
+# Resume button ("继续消消气")
+btn_crop = options_sheet.crop((osplit, 0, ow, oh))
+btn_bbox = btn_crop.getchannel("A").point(lambda v: 255 if v > 15 else 0).getbbox()
+btn_item = btn_crop.crop(btn_bbox)
+btn_out = destination / "btn-resume.webp"
+btn_item.save(btn_out, "WEBP", quality=100, method=6)
+print(f"{btn_out.relative_to(root)}: {btn_item.size}, {btn_out.stat().st_size} bytes")
+
 # 4. Process header title logo & countdown clock badge
 header_sheet = Image.open(source_dir / "header-assets.png").convert("RGBA")
 hw, hh = header_sheet.size
