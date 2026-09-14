@@ -37,7 +37,7 @@ export function mountGame(root) {
   root.innerHTML = `
     <header class="game-header"><a href="/" class="game-brand" aria-label="softie 消消气"><img class="game-brand-img" src="/games/calm-match/logo.webp" alt="softie 消消气" width="105" height="50" draggable="false"></a><div class="game-navigation"><a href="/" class="game-back" aria-label="返回软乎乎" title="返回软乎乎">${controlIcon('back')}</a><button class="game-menu" aria-haspopup="dialog" aria-label="打开游戏菜单" title="游戏菜单">${controlIcon('menu')}</button></div></header>
     <div class="game-layout">
-      <section class="game-story"><p class="game-eyebrow">SOFTIE PLAYROOM · 01</p><h1>今天的气，<br>消掉就好。</h1><p class="game-intro">把同色的小情绪连起来，<br>给自己一个准点下班的理由。</p><div class="game-companion">${jelly(0)}</div><p class="companion-quote"><span class="game-message" role="status" aria-live="polite">不着急，我陪你慢慢消。</span></p></section>
+      <section class="game-story"><p class="game-eyebrow">SOFTIE PLAYROOM · 01</p><h1>今天的气，<br>消掉就好。</h1><p class="game-intro">把同色的小情绪连起来，<br>给自己一个准点下班的理由。</p><div class="game-companion">${jelly(0)}</div><p class="companion-quote"><span class="game-message" role="status" aria-live="polite"><span class="game-message-track"><span class="game-message-text">不着急，我陪你慢慢消。</span></span></span></p></section>
       <section class="game-center" aria-label="消消气棋盘">
         <div class="game-board-heading"></div>
         <div class="match-stage"><div class="match-board-wrap"><div class="match-board" role="group" aria-label="五列六行棋盘；拖动连接同色，或方向键移动、空格选择、回车消除"></div><svg class="match-thread" viewBox="0 0 500 600" preserveAspectRatio="none" aria-hidden="true"><polyline /></svg></div></div>
@@ -89,10 +89,46 @@ export function mountGame(root) {
     rageAnimId = requestAnimationFrame(rageLoop);
   }
   rageAnimId = requestAnimationFrame(rageLoop);
-  const onWindowResize = () => rageMeter.resize();
+  const messageEl = $('.game-message');
+  let currentSpeech = '不着急，我陪你慢慢消。';
+
+  function updateMarquee() {
+    if (!messageEl) return;
+    const text = currentSpeech;
+    if (!text) return;
+    messageEl.classList.remove('is-marquee');
+    messageEl.innerHTML = `<span class="game-message-track"><span class="game-message-text">${text}</span></span>`;
+    const track = messageEl.querySelector('.game-message-track');
+    const textEl = messageEl.querySelector('.game-message-text');
+    if (!track || !textEl) return;
+    const containerWidth = messageEl.clientWidth;
+    const textWidth = textEl.getBoundingClientRect().width;
+    if (textWidth > containerWidth + 2) {
+      const spacerWidth = 48;
+      const shift = Math.ceil(textWidth + spacerWidth);
+      const duration = Math.min(14, Math.max(6, Math.round(shift / 32)));
+      messageEl.innerHTML = `<span class="game-message-track"><span class="game-message-text">${text}</span><span class="game-message-spacer" aria-hidden="true"></span><span class="game-message-text" aria-hidden="true">${text}</span></span>`;
+      messageEl.style.setProperty('--marquee-shift', `${shift}px`);
+      messageEl.style.setProperty('--marquee-duration', `${duration}s`);
+      void messageEl.offsetWidth;
+      messageEl.classList.add('is-marquee');
+    } else {
+      messageEl.style.removeProperty('--marquee-shift');
+      messageEl.style.removeProperty('--marquee-duration');
+    }
+  }
+
+  const message = text => {
+    currentSpeech = text;
+    updateMarquee();
+  };
+
+  const onWindowResize = () => {
+    rageMeter.resize();
+    updateMarquee();
+  };
   window.addEventListener('resize', onWindowResize);
   const board = $('.match-board'), line = $('.match-thread polyline'), win = $('.game-win');
-  const message = text => { $('.game-message').textContent = text; };
   const companion = $('.game-companion');
   const face = companion.querySelector('svg');
   const eyes = [...face.querySelectorAll('circle')];

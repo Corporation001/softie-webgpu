@@ -398,7 +398,8 @@
   position: relative;
   display: flex;
   width: fit-content;
-  max-width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   align-self: center;
@@ -415,6 +416,60 @@
   line-height: 1.4;
   font-weight: 550;
   text-align: center;
+}
+.companion-quote span.game-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+}
+.game-message-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+.game-message-text {
+  display: inline-block;
+  white-space: nowrap;
+}
+.game-message-spacer {
+  display: inline-block;
+  width: 48px;
+  flex: none;
+}
+.companion-quote span.game-message.is-marquee {
+  justify-content: flex-start;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 6px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 6px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+.companion-quote span.game-message.is-marquee .game-message-track {
+  padding-left: 6px;
+  animation: calm-marquee-scroll var(--marquee-duration, 8s) linear infinite;
+}
+@keyframes calm-marquee-scroll {
+  0%,
+  18% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--marquee-shift, 100%)));
+  }
 }
 .companion-quote::before {
   content: "";
@@ -1134,7 +1189,7 @@
   }
   .companion-quote {
     flex: none;
-    max-width: calc(100% - 110px);
+    max-width: calc(100% - 118px);
     display: flex;
     align-items: center;
     text-align: left;
@@ -1159,7 +1214,7 @@
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
   }
   .companion-quote::before {
     content: "";
@@ -1337,7 +1392,7 @@
     height: 42px;
   }
   .companion-quote {
-    max-width: calc(100% - 96px);
+    max-width: calc(100% - 118px);
     font-size: 11px;
     padding: 6px 10px;
     min-height: 36px;
