@@ -30,7 +30,7 @@ export function ensureMove(board) {
 }
 
 export function newGame() {
-  const state = { version: 1, board: Array.from({ length: COLS * ROWS }, color), cleared: 0, moves: 0, best: 0 };
+  const state = { version: 1, board: Array.from({ length: COLS * ROWS }, color), cleared: 0, moves: 0, best: 0, tools: { coffee: 1, plaster: 1, badge: 1 } };
   ensureMove(state.board);
   return state;
 }
@@ -39,7 +39,9 @@ export function validSave(state) {
   return state?.version === 1 && Array.isArray(state.board) && state.board.length === COLS * ROWS
     && state.board.every(c => Number.isInteger(c) && c >= 0 && c < 4)
     && ['cleared', 'moves', 'best'].every(k => Number.isSafeInteger(state[k]) && state[k] >= 0)
-    && state.cleared <= TARGET && state.best <= COLS * ROWS;
+    && state.cleared <= TARGET && state.best <= COLS * ROWS
+    && (state.tools === undefined || (state.tools !== null && ['coffee', 'plaster'].every(k => Number.isInteger(state.tools[k]) && state.tools[k] >= 0 && state.tools[k] <= 1)
+      && (state.tools.badge === undefined || (Number.isInteger(state.tools.badge) && state.tools.badge >= 0 && state.tools.badge <= 1))));
 }
 
 export function extendPath(board, path, index) {
@@ -54,6 +56,34 @@ export function clearPath(state, path) {
   if (state.cleared >= TARGET || path.length < 3 || new Set(path).size !== path.length
     || path.some((i, n) => !Number.isInteger(i) || i < 0 || i >= state.board.length
       || state.board[i] !== state.board[path[0]] || (n && !adjacent(path[n - 1], i)))) return null;
+  return removeTiles(state, path, true);
+}
+
+export function toolTargets(tool, index, board) {
+  if (!Number.isInteger(index) || index < 0 || index >= COLS * ROWS) return [];
+  if (tool === 'plaster') return [index];
+  if (tool === 'coffee') return Array.from({ length: ROWS }, (_, row) => row * COLS + index % COLS);
+  if (tool === 'badge') {
+    const cells = Array.isArray(board?.board) ? board.board : (Array.isArray(board) ? board : null);
+    if (!cells || cells[index] === undefined) return [];
+    const targetColor = cells[index];
+    const targets = [];
+    for (let i = 0; i < cells.length; i++) if (cells[i] === targetColor) targets.push(i);
+    return targets;
+  }
+  return [];
+}
+
+export function useTool(state, tool, index) {
+  const targets = toolTargets(tool, index, state.board);
+  const stock = { coffee: 1, plaster: 1, badge: 1, ...(state.tools ?? {}) };
+  if (!targets.length || stock[tool] !== 1 || state.cleared >= TARGET) return null;
+  const result = removeTiles(state, targets, false);
+  result.state.tools = { ...stock, [tool]: 0 };
+  return { ...result, targets };
+}
+
+function removeTiles(state, path, chain) {
   const removed = new Set(path);
   const board = [...state.board];
   const falls = [];
@@ -67,9 +97,11 @@ export function clearPath(state, path) {
       const source = survivors[ROWS - 1 - row];
       const i = row * COLS + col;
       board[i] = source ? source.value : color();
-      falls[i] = source ? row - source.row : row + 1;
+      // New pieces retain one-cell spacing above the tray instead of all
+      // spawning at row -1 and overlapping throughout the fall.
+      falls[i] = source ? row - source.row : ROWS - survivors.length;
     }
   }
   const shuffled = ensureMove(board);
-  return { state: { ...state, board, cleared: Math.min(TARGET, state.cleared + path.length), moves: state.moves + 1, best: Math.max(state.best, path.length) }, falls, shuffled };
+  return { state: { ...state, board, cleared: Math.min(TARGET, state.cleared + path.length), moves: state.moves + 1, best: chain ? Math.max(state.best, path.length) : state.best }, falls, shuffled };
 }

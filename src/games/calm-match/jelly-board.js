@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { makeGelEnvironment, makeTrayGel, makeAirMaterial } from './gel-material.js';
+import { makeJellyShape } from './jelly-shape.js';
 
 const PALETTE = ['#f17fa9', '#75d7be', '#b098e6', '#edc469'];
 const position = i => new THREE.Vector3(i % 5 - 2, 2.5 - Math.floor(i / 5), 0);
@@ -11,6 +12,7 @@ export const FALL_MS = 800;
 export async function createJellyBoard(host, initialBoard) {
   const canvas = document.createElement('canvas');
   canvas.className = 'jelly-board-canvas';
+  canvas.hidden = true;
   canvas.setAttribute('aria-hidden', 'true');
   host.before(canvas);
   const renderer = new THREE.WebGPURenderer({ canvas, alpha: true, antialias: true });
@@ -47,18 +49,8 @@ export async function createJellyBoard(host, initialBoard) {
     fill.position.set(4, 3, 1); scene.add(fill);
     const floor = new THREE.Mesh(geo(new THREE.PlaneGeometry(5, 6)), mat(new THREE.MeshBasicMaterial({ color: '#f5f5f3' })));
     floor.position.z = -.46; scene.add(floor);
-    const bodyGeometry = geo(new THREE.SphereGeometry(1, 32, 24));
-    const p = bodyGeometry.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const sy = p.getY(i), theta = Math.acos(THREE.MathUtils.clamp(sy, -1, 1));
-      const radial = Math.sin(theta);
-      const radius = Math.pow(radial, .82) * (1 - .07 * sy);
-      const s = radial > .00001 ? radius / radial : 0;
-      const y = .035 + 2.36 * Math.pow((sy + 1) / 2, 1.28) + .42 * Math.exp(-theta * theta / .055);
-      p.setXYZ(i, p.getX(i) * .405 * s, (y - 1.25) * .29, p.getZ(i) * .27 * s);
-    }
-    bodyGeometry.computeVertexNormals();
-    const surfaces = PALETTE.map(c => makeTrayGel(c, environment.texture));
+    const bodyGeometry = geo(makeJellyShape());
+    const surfaces = PALETTE.map(c => makeTrayGel(c, environment.texture, true));
     const gel = surfaces.map(s => mat(s.gel));
     const rearMaterials = surfaces.map(s => mat(s.rear));
     // Keep facial ink out of the opaque texture sampled by gel transmission.
@@ -68,6 +60,10 @@ export async function createJellyBoard(host, initialBoard) {
     const eyeGeo = geo(new THREE.SphereGeometry(.04, 12, 8));
     const bubbleGeo = geo(new THREE.SphereGeometry(1, 10, 8));
     const bubbleMat = mat(makeAirMaterial());
+    const air = new THREE.InstancedMesh(bubbleGeo, bubbleMat, initialBoard.length * 5);
+    air.frustumCulled = false; air.renderOrder = 1; scene.add(air);
+    const airTransform = new THREE.Object3D();
+    const airMatrix = new THREE.Matrix4();
     const mouthPoints = Array.from({ length: 13 }, (_, i) => new THREE.Vector3((i / 12 - .5) * .085, -.082 - Math.sin(i / 12 * Math.PI) * .022, .277));
     const mouthGeo = geo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(mouthPoints), 12, .009, 5, false));
     const shadowPixels = new Uint8Array(32 * 32 * 4);
@@ -91,19 +87,14 @@ export async function createJellyBoard(host, initialBoard) {
       group.add(mouth);
       const airPockets = [];
       for (let j = 0; j < 5; j++) {
-        const bubble = new THREE.Mesh(bubbleGeo, bubbleMat);
-        bubble.renderOrder = 1;
-        bubble.scale.setScalar(.019 + j * .005);
         // Stay well inside the silhouette; front/back offsets add depth without
         // putting air pockets into the transmission buffer (which magnifies them).
         const x = Math.sin(i * 2 + j * 5) * .22;
         const y = -.19 + j * .09;
         const phase = i * .73 + j * 2.4;
-        bubble.position.set(x, y, .06 + j % 3 * .045);
-        airPockets.push({ mesh: bubble, x, y, phase });
-        group.add(bubble);
+        airPockets.push({ x, y, z: .06 + j % 3 * .045, phase, size: .019 + j * .005 });
       }
-      return { group, body, rear, airPockets, home: position(i), pos: position(i), stretch: 0, stretchV: 0, angle: 0, drop: 0, vy: 0, squash: 0, squashV: 0, color: c };
+      return { group, body, rear, airPockets, home: position(i), pos: position(i), glow: 0, stretch: 0, stretchV: 0, angle: 0, drop: 0, vy: 0, squash: 0, squashV: 0, color: c };
     });
     const waist = Array.from({ length: 13 }, (_, i) => new THREE.Vector2(.065 + .13 * Math.pow(Math.abs(i / 6 - 1), 1.7), i / 12 - .5));
     const linkGeo = geo(new THREE.LatheGeometry(waist, 12));
@@ -132,14 +123,14 @@ export async function createJellyBoard(host, initialBoard) {
       const dt = Math.min((now - last) / 1000, .033); last = now;
       if (document.hidden) return;
       const popT = popping ? Math.min(1, (now - popping.start) / 430) : 0;
+      const tier = selection.length >= 7 ? 2 : selection.length >= 5 ? 1 : 0;
+      const breath = reduced.matches ? .5 : .5 + .5 * Math.sin(now * .0032);
       if (popping && popT >= 1 && burstAt < popping.start && !reduced.matches) burst(now);
       for (let i = 0; i < tiles.length; i++) {
         const t = tiles[i], selected = selection.indexOf(i), inPop = popping?.indices.includes(i);
-        for (const pocket of t.airPockets) {
-          const time = reduced.matches ? 0 : now * .0004;
-          pocket.mesh.position.x = pocket.x + (reduced.matches ? 0 : Math.sin(time + pocket.phase) * .009);
-          pocket.mesh.position.y = pocket.y + (reduced.matches ? 0 : Math.sin(time * .7 + pocket.phase) * .016);
-        }
+        const light = selected >= 0 ? .55 + tier * .16 + (tier ? breath * .18 : 0) + (inPop ? popT * .12 : 0) : 0;
+        t.glow += (light - t.glow) * (1 - Math.exp(-16 * dt));
+        t.body.userData.gelGlow = t.glow;
         t.pos.copy(t.home);
         let target = 0;
         if (selected >= 0 && !popping) {
@@ -169,7 +160,8 @@ export async function createJellyBoard(host, initialBoard) {
         t.squashV += (-t.squash * 220 - t.squashV * 12) * dt;
         t.squash = THREE.MathUtils.clamp(t.squash + t.squashV * dt, -.32, .28);
         t.pos.y += t.drop;
-        let size = 1;
+        const charge = selection.length >= 7 ? .045 : selection.length >= 5 ? .025 : 0;
+        let size = selected >= 0 && !reduced.matches ? 1 + charge * (.5 + breath) : 1;
         if (inPop && !reduced.matches) {
           t.pos.lerp(center, ease(popT) * .96);
           size = popT < .75 ? 1 + Math.sin(popT * Math.PI) * .15 : Math.max(.02, (1 - popT) * 4);
@@ -182,16 +174,27 @@ export async function createJellyBoard(host, initialBoard) {
         t.group.matrix.compose(t.pos, quat, scale);
         rotation.makeRotationZ(-t.angle); t.group.matrix.multiply(rotation);
         rotation.makeScale(Math.exp(-squash / 2), Math.exp(squash), 1); t.group.matrix.multiply(rotation);
+        const time = reduced.matches ? 0 : now * .0004;
+        t.airPockets.forEach((pocket, j) => {
+          airTransform.position.set(pocket.x + (reduced.matches ? 0 : Math.sin(time + pocket.phase) * .009), pocket.y + (reduced.matches ? 0 : Math.sin(time * .7 + pocket.phase) * .016), pocket.z);
+          airTransform.scale.setScalar(t.group.visible ? pocket.size : 0);
+          airTransform.updateMatrix(); airMatrix.multiplyMatrices(t.group.matrix, airTransform.matrix);
+          air.setMatrixAt(i * 5 + j, airMatrix);
+        });
       }
+      air.instanceMatrix.needsUpdate = true;
       links.forEach((link, n) => {
         link.visible = n < selection.length - 1 && !(popping && popT >= 1);
         if (!link.visible) return;
         const a = tiles[selection[n]], b = tiles[selection[n + 1]];
         delta.copy(b.pos).sub(a.pos);
         link.position.copy(a.pos).addScaledVector(delta, .5); link.position.z = -.035;
-        link.quaternion.setFromUnitVectors(axisY, delta.clone().normalize());
-        link.scale.set(1, Math.max(.01, delta.length()), 1);
+        const length = delta.length();
+        link.quaternion.setFromUnitVectors(axisY, length > .00001 ? delta.multiplyScalar(1 / length) : axisY);
+        const thickness = selection.length >= 7 ? 1.25 : selection.length >= 5 ? 1.12 : 1;
+        link.scale.set(thickness, Math.max(.01, length), thickness);
         link.material = gel[a.color];
+        link.userData.gelGlow = .75 + tier * .16 + breath * .12;
       });
       if (particles.count) {
         const age = (now - burstAt) / 1000;
@@ -207,10 +210,20 @@ export async function createJellyBoard(host, initialBoard) {
     }
     const resize = () => { const r = host.getBoundingClientRect(); if (r.width && r.height) renderer.setSize(r.width, r.height, false); };
     observer = new ResizeObserver(resize); observer.observe(host); resize();
+    // Compile every palette and the normally hidden effects before revealing
+    // the tray; a monochrome saved board must not defer this to its first clear.
+    tiles.forEach((tile, i) => { tile.body.material = gel[i % 4]; tile.rear.material = rearMaterials[i % 4]; tile.group.matrix.makeTranslation(tile.home.x, tile.home.y, 0); });
+    links.forEach((link, i) => { link.visible = true; link.material = gel[i % 4]; });
+    particles.count = 64;
     await renderer.compileAsync(scene, camera);
-    host.classList.add('has-jelly-renderer');
+    renderer.render(scene, camera);
+    tiles.forEach(tile => { tile.body.material = gel[tile.color]; tile.rear.material = rearMaterials[tile.color]; });
+    links.forEach(link => { link.visible = false; });
+    particles.count = 0;
+    update(performance.now());
     renderer.setAnimationLoop(update);
     return {
+      show() { canvas.hidden = false; host.classList.add('has-jelly-renderer'); },
       select(indices, client) {
         if (popping) return;
         selection = [...indices];
@@ -226,7 +239,7 @@ export async function createJellyBoard(host, initialBoard) {
       sync(colors, falls = []) {
         canvas.dataset.phase = falls.length ? 'fall' : 'idle';
         boardColors = [...colors]; popping = null; selection = []; finger = null;
-        tiles.forEach((t, i) => { t.color = boardColors[i]; t.body.material = gel[t.color]; t.rear.material = rearMaterials[t.color]; t.drop = reduced.matches ? 0 : falls[i] || 0; t.vy = 0; t.group.visible = true; });
+        tiles.forEach((t, i) => { t.color = boardColors[i]; t.glow = 0; t.body.userData.gelGlow = 0; t.body.material = gel[t.color]; t.rear.material = rearMaterials[t.color]; t.drop = reduced.matches ? 0 : falls[i] || 0; t.vy = 0; t.group.visible = true; });
       },
       dispose,
     };

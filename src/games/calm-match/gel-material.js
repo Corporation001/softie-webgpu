@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { bumpMap, cameraPosition, color, float, mix, mx_noise_float, normalView, normalWorld, pmremTexture, positionLocal, positionViewDirection, positionWorld, reflect, uniform, uv, vec3, vec4 } from 'three/tsl';
 
 // Match the homepage's softbox rig, at a smaller cubemap resolution for the tray.
-export function makeGelEnvironment(renderer) {
+export function makeGelEnvironment(renderer, size = 256) {
   const studio = new THREE.Scene();
   studio.background = new THREE.Color(0xe9e7e5);
   const cards = [];
@@ -18,11 +18,11 @@ export function makeGelEnvironment(renderer) {
     card.position.set(x, y, z); card.lookAt(0, 0, 0); studio.add(card); cards.push(card);
   }
   const pmrem = new THREE.PMREMGenerator(renderer);
-  try { return pmrem.fromScene(studio, .015, .1, 40, { size: 256 }); }
+  try { return pmrem.fromScene(studio, .015, .1, 40, { size }); }
   finally { cards.forEach(c => { c.geometry.dispose(); c.material.dispose(); }); pmrem.dispose(); }
 }
 
-export function makeTrayGel(value, environment) {
+export function makeTrayGel(value, environment, selectionGlow = false) {
   const tintColor = new THREE.Color(value);
   tintColor.multiplyScalar(1 / Math.max(tintColor.r, tintColor.g, tintColor.b)).lerp(new THREE.Color('white'), .23);
   // The authored homepage body is ~4x larger. Scale optical distance as well as geometry.
@@ -36,6 +36,14 @@ export function makeTrayGel(value, environment) {
   const tint = uniform(gel.attenuationColor);
   const facing = normalView.dot(positionViewDirection).abs().clamp(0, 1);
   gel.thicknessNode = facing.pow(.55).mul(.5625).add(.0375);
+  if (selectionGlow) {
+    // Object-scoped uniform: shared palette materials must not light up every
+    // jelly of the same color. Lighting stays on the actual deformed surface.
+    const glow = uniform(0).onObjectUpdate(({ object }) => object.userData.gelGlow ?? 0);
+    gel.emissiveNode = tint.mul(glow).mul(facing.pow(1.5).mul(.24).add(.045));
+    gel.thicknessNode = gel.thicknessNode.mul(float(1).sub(glow.mul(.12)));
+    gel.roughnessNode = float(.018).add(glow.mul(.024));
+  }
   const limb = facing.smoothstep(.14, .34).oneMinus();
   const candy = mix(color('#f5f5f3'), tint, .48);
   const setupOutput = gel.setupOutput.bind(gel);
