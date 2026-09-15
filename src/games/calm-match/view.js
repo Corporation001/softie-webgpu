@@ -347,6 +347,7 @@ export function mountGame(root) {
   });
   listen($('.game-hint'), 'click', () => {
     if (busy || pointer !== null) return;
+    feedback.button('hint');
     cancel();
     const hint = findMove(state.board);
     hint.forEach(i => board.children[i].classList.add('hinted'));
@@ -365,6 +366,7 @@ export function mountGame(root) {
   root.querySelectorAll('[data-tool]').forEach(button => listen(button, 'click', () => {
     if (busy || pointer !== null || state.cleared === TARGET || !state.tools[button.dataset.tool]) return;
     const next = activeTool === button.dataset.tool ? null : button.dataset.tool;
+    feedback.button(next ? 'tool' : 'tool-cancel', button.dataset.tool);
     cancel(); activeTool = next; toolsUI();
     const toolTips = {
       coffee: t('cmToolCoffeeTip'),
@@ -402,9 +404,9 @@ export function mountGame(root) {
     timer = setTimeout(onEnd, 260);
     dialog.addEventListener('animationend', onEnd);
   }
-  listen($('.game-sound'), 'click', () => { sound.toggle(); updateSound(); });
-  listen($('.game-menu'), 'click', () => { if (!busy) { cancel(); openDialog($('.game-options')); } });
-  listen($('.close-options'), 'click', () => closeDialog($('.game-options')));
+  listen($('.game-sound'), 'click', () => { feedback.vibrate(10); sound.toggle(); updateSound(); });
+  listen($('.game-menu'), 'click', () => { if (!busy) { feedback.button('tap'); cancel(); openDialog($('.game-options')); } });
+  listen($('.close-options'), 'click', () => { feedback.button('tap'); closeDialog($('.game-options')); });
   function reset() {
     if (busy) return;
     cancel();
@@ -420,10 +422,13 @@ export function mountGame(root) {
     render();
     message(t('cmMsgNewGame'));
   }
-  listen($('.game-restart'), 'click', () => { if (!busy) { cancel(); closeDialog($('.game-options'), () => openDialog($('.game-confirm'))); } });
-  listen($('.cancel-reset'), 'click', () => closeDialog($('.game-confirm')));
-  listen($('.confirm-reset'), 'click', reset);
-  listen($('.game-again'), 'click', reset);
+  listen($('.game-restart'), 'click', () => { if (!busy) { feedback.button('tap'); cancel(); closeDialog($('.game-options'), () => openDialog($('.game-confirm'))); } });
+  listen($('.cancel-reset'), 'click', () => { feedback.button('tap'); closeDialog($('.game-confirm')); });
+  listen($('.confirm-reset'), 'click', () => { feedback.button('reset'); reset(); });
+  listen($('.game-again'), 'click', () => { feedback.button('again'); reset(); });
+  for (const link of [$('.game-back'), $('.game-brand'), $('.game-win a')]) {
+    if (link) listen(link, 'click', () => feedback.button('tap'));
+  }
   listen(win, 'cancel', e => e.preventDefault());
   for (const d of [$('.game-options'), $('.game-confirm')]) {
     listen(d, 'cancel', e => {

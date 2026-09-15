@@ -45,6 +45,29 @@ export function createFeedback() {
       for (let i = 0; i <= chainTier(count); i++) tone([523.25, 659.25, 783.99][i], .025 + i * .035, .2, .12);
       vibrate(count >= 7 ? [24, 30, 24] : 22);
     },
+    button(action = 'tap', detail) {
+      vibrate(10);
+      if (action === 'hint') {
+        tone(659.25, 0, .08, .15);
+        tone(880, .05, .14, .18);
+      } else if (action === 'tool') {
+        const pitches = { coffee: 659.25, plaster: 523.25, badge: 783.99 };
+        tone(pitches[detail] ?? 587.33, 0, .1, .18);
+      } else if (action === 'tool-cancel') {
+        tone(392, 0, .08, .14);
+      } else if (action === 'again') {
+        tone(523.25, 0, .09, .16);
+        tone(659.25, .05, .11, .16);
+        tone(783.99, .10, .15, .18);
+      } else if (action === 'reset') {
+        tone(440, 0, .12, .18);
+      } else {
+        tone(523.25, 0, .08, .16);
+      }
+    },
+    vibrate(pattern) {
+      vibrate(pattern);
+    },
     dispose() {
       for (const { osc, gain } of voices) { osc.onended = null; osc.stop(); osc.disconnect(); gain.disconnect(); }
       voices.clear();
