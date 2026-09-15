@@ -59,11 +59,10 @@ document.addEventListener('click', event => {
   if (!overlay.hidden) return;
   const go = () => { history.pushState({}, '', url.pathname); route(); window.scrollTo(0, 0); };
   if (url.pathname === '/games/calm-match' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const token = ++navigation;
-    overlay.classList.remove('fade-out');
-    overlay.hidden = false;
     history.pushState({}, '', url.pathname);
     route();
+    const token = navigation;
+    overlay.classList.remove('fade-out');
     overlay.hidden = false;
     window.scrollTo(0, 0);
 

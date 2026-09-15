@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { makeGelEnvironment, makeTrayGel, makeAirMaterial } from './gel-material.js';
+import { makeGelEnvironment, makeTrayGel, makeAirMaterial, makeBurstParticleMaterial } from './gel-material.js';
 import { makeJellyShape } from './jelly-shape.js';
 
 const PALETTE = ['#f17fa9', '#75d7be', '#b098e6', '#edc469'];
@@ -99,7 +99,9 @@ export async function createJellyBoard(host, initialBoard) {
     const waist = Array.from({ length: 13 }, (_, i) => new THREE.Vector2(.065 + .13 * Math.pow(Math.abs(i / 6 - 1), 1.7), i / 12 - .5));
     const linkGeo = geo(new THREE.LatheGeometry(waist, 12));
     const links = Array.from({ length: 29 }, () => { const m = new THREE.Mesh(linkGeo, gel[0]); m.visible = false; scene.add(m); return m; });
-    const particles = new THREE.InstancedMesh(bubbleGeo, bubbleMat, 64);
+    const burstParticles = makeBurstParticleMaterial(PALETTE[0]);
+    const particleMat = mat(burstParticles.material);
+    const particles = new THREE.InstancedMesh(bubbleGeo, particleMat, 64);
     particles.count = 0; particles.frustumCulled = false; scene.add(particles);
     const particleData = [];
     const dummy = new THREE.Object3D();
@@ -111,6 +113,8 @@ export async function createJellyBoard(host, initialBoard) {
     function burst(now) {
       canvas.dataset.phase = 'bubbles';
       burstAt = now; particleData.length = 0;
+      const popColor = popping?.color ?? 0;
+      burstParticles.color.set(PALETTE[popColor] || PALETTE[0]);
       const count = Math.min(64, popping.indices.length * 7);
       for (let i = 0; i < count; i++) {
         const angle = i * 2.39996;
@@ -234,7 +238,8 @@ export async function createJellyBoard(host, initialBoard) {
         canvas.dataset.phase = 'gather';
         selection = [...indices]; center.set(0, 0, 0);
         indices.forEach(i => center.add(tiles[i].pos)); center.divideScalar(indices.length);
-        popping = { indices: [...indices], start: performance.now() };
+        const popColor = tiles[indices[0]]?.color ?? boardColors[indices[0]] ?? 0;
+        popping = { indices: [...indices], color: popColor, start: performance.now() };
       },
       sync(colors, falls = []) {
         canvas.dataset.phase = falls.length ? 'fall' : 'idle';
