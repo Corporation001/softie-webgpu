@@ -594,7 +594,91 @@
   pointer-events: none;
   border-radius: 18px;
 }
+.has-jelly-renderer .jelly-board-canvas {
+  animation: calm-jelly-fade-in 0.28s ease-out;
+}
+@keyframes calm-jelly-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .has-jelly-renderer .mini-jelly {
+  visibility: hidden;
+}
+/* 棋盘未就绪时的果冻雾化蒙版 */
+.match-board-veil {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: rgba(251, 248, 245, 0.72);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.45s cubic-bezier(0.2, 0.8, 0.25, 1),
+              backdrop-filter 0.45s ease-out,
+              -webkit-backdrop-filter 0.45s ease-out,
+              visibility 0.45s;
+  will-change: opacity, backdrop-filter;
+}
+.veil-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 235, 245, 0.28) 70%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  animation: calm-veil-pulse 2.2s ease-in-out infinite alternate;
+}
+.veil-badge {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(100, 110, 95, 0.08);
+  color: #556658;
+  font-size: 12px;
+  font-weight: 550;
+  letter-spacing: 0.5px;
+}
+.veil-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f472b6;
+  box-shadow: 0 0 8px #f472b6;
+  animation: calm-dot-blink 1.2s ease-in-out infinite alternate;
+}
+@keyframes calm-veil-pulse {
+  0% { opacity: 0.6; transform: scale(0.995); }
+  100% { opacity: 0.95; transform: scale(1.005); }
+}
+@keyframes calm-dot-blink {
+  0% { opacity: 0.35; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.25); }
+}
+/* 3D 渲染就绪时，雾化蒙版丝滑揭开 */
+.match-board-wrap.has-3d-ready .match-board-veil {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   visibility: hidden;
 }
 .has-jelly-renderer .match-cell.selected {
@@ -1048,6 +1132,11 @@
   text-align: center;
   background: #f5f5f3f5;
   backdrop-filter: blur(12px);
+  transition: opacity 0.35s ease-out;
+}
+.calm-transition.fade-out {
+  opacity: 0;
+  pointer-events: none;
 }
 .transition-jellies {
   display: flex;

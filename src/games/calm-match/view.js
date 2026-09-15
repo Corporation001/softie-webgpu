@@ -40,7 +40,7 @@ export function mountGame(root) {
       <section class="game-story"><p class="game-eyebrow">SOFTIE PLAYROOM · 01</p><h1>今天的气，<br>消掉就好。</h1><p class="game-intro">把同色的小情绪连起来，<br>给自己一个准点下班的理由。</p><div class="game-companion">${jelly(0)}</div><p class="companion-quote"><span class="game-message" role="status" aria-live="polite"><span class="game-message-track"><span class="game-message-text">不着急，我陪你慢慢消。</span></span></span></p></section>
       <section class="game-center" aria-label="消消气棋盘">
         <div class="game-board-heading"></div>
-        <div class="match-stage"><div class="match-board-wrap"><div class="match-board" role="group" aria-label="五列六行棋盘；拖动连接同色，或方向键移动、空格选择、回车消除"></div><svg class="match-thread" viewBox="0 0 500 600" preserveAspectRatio="none" aria-hidden="true"><polyline /></svg></div></div>
+        <div class="match-stage"><div class="match-board-wrap"><div class="match-board" role="group" aria-label="五列六行棋盘；拖动连接同色，或方向键移动、空格选择、回车消除"></div><svg class="match-thread" viewBox="0 0 500 600" preserveAspectRatio="none" aria-hidden="true"><polyline /></svg><div class="match-board-veil" aria-hidden="true"><div class="veil-shimmer"></div><span class="veil-badge"><span class="veil-dot"></span><span>软乎乎凝固中…</span></span></div></div></div>
         <p class="game-help">同色连起来 · 斜着也可以 · 松手噗叽消除</p>
       </section>
       <aside class="game-sidebar"><p class="game-eyebrow"><img class="clock-icon" src="/games/calm-match/clock.webp" width="40" height="40" alt="" draggable="false"><span>下班倒计气</span></p><div class="rage-meter-hud game-rage-hud" data-mood="max" aria-label="打工怨气进度条" title="打工怨气槽"><div class="rage-hud-avatar-wrap"><div class="rage-hud-avatar" data-state="max" aria-hidden="true"><svg class="rage-avatar-svg" viewBox="0 0 36 36" fill="none"><path class="rage-avatar-body" d="M18 4c-4.4 0-4.7 5.4-7.7 7.4C5.7 14 3.8 18.2 3.8 22.8c0 6.4 5.7 9.5 14.2 9.5s14.2-3.1 14.2-9.5c0-4.6-1.9-8.7-6.5-11.6C22.7 9.4 22.4 4 18 4Z" fill="currentColor" /><circle class="rage-avatar-blush" cx="10" cy="23" r="1.8" fill="#f472b6" opacity="0.65" /><circle class="rage-avatar-blush" cx="26" cy="23" r="1.8" fill="#f472b6" opacity="0.65" /><g class="rage-avatar-eyes"><circle class="rage-eye rage-eye-left" cx="13" cy="20" r="1.7" fill="#1c1917" /><circle class="rage-eye rage-eye-right" cx="23" cy="20" r="1.7" fill="#1c1917" /></g><path class="rage-avatar-mouth" d="M16 23.5q2 2 4 0" stroke="#1c1917" stroke-width="1.6" stroke-linecap="round" fill="none" /><path class="rage-avatar-cross" d="M22 10.5q2-1.5 2 2.5m-3-1q2.5 0 2.5 3m-2.5-3.5q1.5-2 3.5 0" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round" fill="none" /></svg></div></div><div class="rage-hud-track-wrap"><div class="rage-hud-header"><span class="rage-hud-badge">MAX 怨气爆表!</span><span class="rage-hud-percent">100%</span></div><div class="rage-hud-bar-capsule"><canvas class="rage-hud-canvas" width="240" height="32" aria-hidden="true"></canvas><div class="rage-hud-sparkles" aria-hidden="true"></div></div></div></div><div class="game-rage sr-only" hidden><strong>100%</strong><span>怨气值</span></div><progress class="sr-only" max="90" value="90" aria-label="剩余怨气" hidden></progress><p class="game-goal">消除 90 只软乎乎，清空今日怨气。</p><dl class="game-stats"><div><dt>已消除</dt><dd class="stat-cleared"></dd></div><div><dt>最长连线</dt><dd class="stat-best"></dd></div><div><dt>消除次数</dt><dd class="stat-moves"></dd></div></dl><div class="game-tools"><button class="game-hint" type="button" aria-label="给点提示"></button><button class="game-sound" type="button" aria-label="切换音效"></button><button class="game-restart" type="button" aria-label="重新开始"><img class="game-tool-img" src="/games/calm-match/btn-restart.webp" width="48" height="48" alt="" draggable="false"><span class="game-tool-label">重新开始</span></button></div><p class="game-save-note">进度自动保存，随时回来。</p></aside>
@@ -172,6 +172,7 @@ export function mountGame(root) {
     pendingBoard = scene;
     if (!busy) activateBoard();
   }).catch(error => {
+    $('.match-board-wrap')?.classList.add('has-3d-ready');
     if (!disposed) message('果冻画质暂未启动，已保留轻量棋盘，可继续玩。');
     console.warn('[calm-match] jelly renderer:', error);
   });
@@ -181,6 +182,9 @@ export function mountGame(root) {
     jellyBoard.sync(state.board);
     jellyBoard.select(path, finger);
     jellyBoard.show();
+    requestAnimationFrame(() => {
+      $('.match-board-wrap')?.classList.add('has-3d-ready');
+    });
   }
   function render(falls = []) {
     toolsUI();

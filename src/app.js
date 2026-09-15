@@ -58,15 +58,27 @@ document.addEventListener('click', event => {
   event.preventDefault();
   if (!overlay.hidden) return;
   const go = () => { history.pushState({}, '', url.pathname); route(); window.scrollTo(0, 0); };
-  let saved = false;
-  try { saved = !!localStorage.getItem('softie:calm-match:v1'); } catch { /* Storage is optional. */ }
-  if (url.pathname === '/games/calm-match' && !saved && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (url.pathname === '/games/calm-match' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const token = ++navigation;
+    overlay.classList.remove('fade-out');
     overlay.hidden = false;
-    const minWait = new Promise(resolve => { timer = setTimeout(resolve, 600); });
+    history.pushState({}, '', url.pathname);
+    route();
+    overlay.hidden = false;
+    window.scrollTo(0, 0);
+
+    const minWait = new Promise(resolve => { timer = setTimeout(resolve, 900); });
     const assetWait = preloadGameAssets({ timeoutMs: 2500 });
     Promise.all([minWait, assetWait]).then(() => {
-      if (token === navigation) go();
+      if (token === navigation) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          if (token === navigation) {
+            overlay.hidden = true;
+            overlay.classList.remove('fade-out');
+          }
+        }, 320);
+      }
     });
   } else {
     preloadGameAssets({ timeoutMs: 2000 });
