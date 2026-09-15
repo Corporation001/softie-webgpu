@@ -70,3 +70,39 @@ test('game audio bounds overlapping voices, respects mute and disconnects on dis
     if (previous.matchMedia === undefined) delete globalThis.matchMedia; else globalThis.matchMedia = previous.matchMedia;
   }
 });
+
+test('button click feedback plays distinct actions, respects mute and cleans up on disposal', () => {
+  const previous = { ctx: sound.ctx, filter: sound.filter, enabled: sound.enabled, matchMedia: globalThis.matchMedia };
+  const nodes = [];
+  const param = { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} };
+  function node() { const n = { frequency: param, gain: param, connect() {}, disconnect() { this.disconnected = true; }, start() {}, stop() { this.stopped = true; } }; nodes.push(n); return n; }
+  globalThis.matchMedia = () => ({ matches: false });
+  sound.ctx = { currentTime: 0, state: 'running', createOscillator: node, createGain: node };
+  sound.filter = {}; sound.enabled = true;
+  const feedback = createFeedback();
+  try {
+    feedback.button('tap');
+    assert.equal(nodes.length, 2, 'tap creates osc/gain pair');
+    feedback.button('hint');
+    assert.equal(nodes.length, 6, 'hint creates 2 tone pairs (4 nodes)');
+    feedback.button('tool', 'coffee');
+    feedback.button('tool-cancel');
+    feedback.button('reset');
+    feedback.button('again');
+    assert.ok(nodes.length > 6);
+
+    const countBeforeMute = nodes.length;
+    sound.enabled = false;
+    feedback.button('tap');
+    feedback.button('hint');
+    feedback.button('tool', 'badge');
+    assert.equal(nodes.length, countBeforeMute, 'muted state creates no new audio nodes');
+
+    feedback.dispose();
+    assert.ok(nodes.every(n => n.disconnected), 'all button nodes released on disposal');
+  } finally {
+    sound.ctx = previous.ctx; sound.filter = previous.filter; sound.enabled = previous.enabled;
+    if (previous.matchMedia === undefined) delete globalThis.matchMedia; else globalThis.matchMedia = previous.matchMedia;
+  }
+});
+

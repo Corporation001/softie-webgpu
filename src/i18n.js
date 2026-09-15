@@ -19,6 +19,33 @@ export const messages = {
     accessory: '打工装扮', accNone: '素颜', accBadge: '工牌', accCoffee: '冰美式', accBandaid: '创可贴',
     accNoneLabel: '素颜无配件', accBadgeLabel: '打工人工牌', accCoffeeLabel: '续命冰美式', accBandaidLabel: '战损创可贴',
     rageTitle: '打工怨气槽', rageChill: '摸鱼放空中', rageAnnoyed: '有点上火', rageHot: '暴怒升温', rageMax: 'MAX 怨气爆表!', rageSleepy: '呼噜充能中…', rageMeterLabel: '打工怨气进度条',
+    cmTitle: '消消气 · softie', cmTransition: '消消怨气，准点下班。', cmSettingJellies: '软乎乎凝固中…',
+    cmBrandLabel: 'softie 消消气', cmBackLabel: '返回软乎乎', cmMenuLabel: '打开游戏菜单', cmMenuTitle: '游戏菜单',
+    cmStoryEyebrow: 'SOFTIE PLAYROOM · 01', cmStoryTitle: '今天的气，<br>消掉就好。', cmStoryIntro: '把同色的小情绪连起来，<br>给自己一个准点下班的理由。',
+    cmBoardAria: '消消气棋盘', cmBoardDesc: '五列六行棋盘；拖动连接同色，或方向键移动、空格选择、回车消除',
+    cmHelp: '同色连起来 · 斜着也可以 · 松手噗叽消除',
+    cmJelly0: '草莓', cmJelly1: '薄荷', cmJelly2: '葡萄', cmJelly3: '奶油',
+    cmToolsAria: '每局各一次的解压道具',
+    cmToolCoffee: '冰美式', cmToolCoffeeAria: '冰美式，清除一列', cmToolCoffeeTip: '冰美式：点选要清掉的一列',
+    cmToolPlaster: '创可贴', cmToolPlasterAria: '创可贴，清除一只', cmToolPlasterTip: '创可贴：点选一只软乎乎',
+    cmToolBadge: '工牌', cmToolBadgeAria: '工牌，同色全消', cmToolBadgeTip: '工牌：点选一只软乎乎，全场同色打卡下班',
+    cmCountdown: '下班倒计气', cmGoal: '消除 90 只软乎乎，清空今日怨气。',
+    cmStatCleared: '已消除', cmStatBest: '最长连线', cmStatMoves: '消除次数',
+    cmHintBtn: '给点提示', cmHintTitle: '找一组可消除的软乎乎',
+    cmSoundOn: '音效 开', cmSoundOff: '音效 关', cmSoundMuteAria: '关闭音效', cmSoundUnmuteAria: '开启音效',
+    cmRestart: '重新开始', cmSaveNote: '进度自动保存，随时回来。',
+    cmRageMax: 'MAX 怨气爆表!', cmRageHot: '暴怒升温', cmRageAnnoyed: '有点上火', cmRageAlmost: '快消完啦', cmRageCleared: '怨气已清空!',
+    cmWinTitle: '怨气清空，下班！', cmWinAgain: '再消一局', cmWinHome: '回去揉揉软乎乎 ↗',
+    cmConfirmTitle: '重新开始这一局？', cmConfirmNote: '当前消除进度会重置。', cmConfirmReset: '重新开始', cmConfirmCancel: '继续玩',
+    cmOptionsTitle: '歇一小会儿', cmOptionsDesc: '连起至少 3 只同色软乎乎，斜着也可以。<br>点选道具，再点棋盘使用；再点道具可取消。',
+    cmResumeBtn: '继续消消气',
+    cmMoodLabel: '陪伴你的软乎乎：', cmMoodHappy: '开心', cmMoodExcited: '期待', cmMoodCurious: '专注', cmMoodRelaxed: '放松', cmMoodCalm: '平静',
+    cmQuoteCalm: '不着急，我陪你慢慢消。', cmQuoteHappy: '啵！又轻松了一点。', cmQuoteExcited: '哇——这一大团，准备好了吗？',
+    cmQuoteCurious: '对对，就是这样，连起来！', cmQuoteRelaxed: '气快消完啦，肩膀也放松一点。', cmQuoteWin: '今天辛苦啦，下班！',
+    cmMsgNoMatch: '连起至少 3 只同色软乎乎，试试看。', cmMsgToolCancel: '道具已收好，没有消耗次数。', cmMsgToolReady: '道具已收好，继续连线吧。',
+    cmMsgShuffled: '帮你重新拌了拌，又有同色伙伴啦。', cmMsgHintGuide: '沿金色虚线，连起光圈中的 3 只软乎乎。',
+    cmMsgNewGame: '新的一局，慢慢来。', cmMsgResumeSaved: '接着上次的进度，慢慢消。', cmMsgStartFresh: '从任意一只开始，连起 3 只同色伙伴。',
+    cmMsgRendererFallback: '果冻画质暂未启动，已保留轻量棋盘，可继续玩。',
   },
   en: {
     title: 'softie · Soft & squishy.', description: 'A soft little WebGPU slime. Squish, stretch, and let the day feel lighter.',
@@ -40,9 +67,45 @@ export const messages = {
     accessory: 'Accessories', accNone: 'Clean', accBadge: 'ID Badge', accCoffee: 'Iced Coffee', accBandaid: 'Band-aid',
     accNoneLabel: 'Clean without accessories', accBadgeLabel: 'Worker ID Badge', accCoffeeLabel: 'Lifesaver Iced Americano', accBandaidLabel: 'War-damaged band-aid',
     rageTitle: 'Fury Gauge', rageChill: 'Chill & Slacking', rageAnnoyed: 'Simmering', rageHot: 'Heating Up', rageMax: 'MAX RAGE!', rageSleepy: 'Napping…', rageMeterLabel: 'Slime fury progress meter',
+    cmTitle: 'Calm Match · softie', cmTransition: 'Pop the stress, clock out on time.', cmSettingJellies: 'Chilling the jellies…',
+    cmBrandLabel: 'softie Calm Match', cmBackLabel: 'Back to Softie', cmMenuLabel: 'Open game menu', cmMenuTitle: 'Game Menu',
+    cmStoryEyebrow: 'SOFTIE PLAYROOM · 01', cmStoryTitle: 'Workday stress?<br>Just pop it away.', cmStoryIntro: 'Chain matching little moodies,<br>and earn your on-time clock-out.',
+    cmBoardAria: 'Calm Match grid', cmBoardDesc: '5x6 grid: drag to link matching colors, or use Arrow keys, Space to select, Enter to pop',
+    cmHelp: 'Link matching colors · Diagonals work too · Release to pop!',
+    cmJelly0: 'Strawberry', cmJelly1: 'Mint', cmJelly2: 'Grape', cmJelly3: 'Vanilla Cream',
+    cmToolsAria: 'Single-use stress-relief boosters',
+    cmToolCoffee: 'Iced Americano', cmToolCoffeeAria: 'Iced Americano: blast an entire column', cmToolCoffeeTip: 'Iced Americano: Tap a column to blast it clear',
+    cmToolPlaster: 'Band-Aid', cmToolPlasterAria: 'Band-Aid: remove a single softie', cmToolPlasterTip: 'Band-Aid: Tap any softie to pop it',
+    cmToolBadge: 'ID Badge', cmToolBadgeAria: 'ID Badge: clock out all softies of the same color', cmToolBadgeTip: 'ID Badge: Tap a softie to clock out all matching colors!',
+    cmCountdown: 'Clock-Out Countdown', cmGoal: 'Pop 90 softies to clear today’s rage meter.',
+    cmStatCleared: 'Popped', cmStatBest: 'Max Combo', cmStatMoves: 'Moves',
+    cmHintBtn: 'Hint', cmHintTitle: 'Reveal a matching chain',
+    cmSoundOn: 'Sound: On', cmSoundOff: 'Sound: Off', cmSoundMuteAria: 'Mute sound', cmSoundUnmuteAria: 'Enable sound',
+    cmRestart: 'Restart', cmSaveNote: 'Auto-saved. Drop in and play anytime.',
+    cmRageMax: 'MAX RAGE!', cmRageHot: 'Red Hot!', cmRageAnnoyed: 'Simmering', cmRageAlmost: 'Almost Chill…', cmRageCleared: 'Stress Free!',
+    cmWinTitle: 'Stress Cleared! Time to Clock Out! 🎉', cmWinAgain: 'Play Again', cmWinHome: 'Back to Squish Softie ↗',
+    cmConfirmTitle: 'Restart this round?', cmConfirmNote: 'Current board progress will be reset.', cmConfirmReset: 'Restart', cmConfirmCancel: 'Keep Playing',
+    cmOptionsTitle: 'Take a Breather', cmOptionsDesc: 'Link 3+ matching softies — diagonals count!<br>Tap a booster, then tap grid to use.',
+    cmResumeBtn: 'Keep Popping',
+    cmMoodLabel: 'Companion: ', cmMoodHappy: 'Joyful', cmMoodExcited: 'Hyped', cmMoodCurious: 'In the Zone', cmMoodRelaxed: 'Chill', cmMoodCalm: 'Zen',
+    cmQuoteCalm: 'No rush. Let’s pop through it together.', cmQuoteHappy: 'Pop! Feeling lighter with every squish.', cmQuoteExcited: 'Whoa—look at that mega chain! Ready?',
+    cmQuoteCurious: 'Yes! Just like that, chain ’em up!', cmQuoteRelaxed: 'Almost stress-free! Drop those shoulders and chill.', cmQuoteWin: 'You crushed it today. Shift’s over, clock out!',
+    cmMsgNoMatch: 'Chain at least 3 matching softies to pop!', cmMsgToolCancel: 'Booster cancelled. No charges used.', cmMsgToolReady: 'Booster stashed. Back to chaining!',
+    cmMsgShuffled: 'No more moves! Shuffled the board for fresh combos.', cmMsgHintGuide: 'Trace the glowing dashed line to link the 3 highlighted softies.',
+    cmMsgNewGame: 'Fresh board! Take your time.', cmMsgResumeSaved: 'Welcome back! Picking up right where you left off.', cmMsgStartFresh: 'Pick any softie to start chaining 3 matching colors.',
+    cmMsgRendererFallback: '3D jelly shaders unavailable — switched to 2D lite mode. Enjoy!',
   },
 };
+
+export function getCurrentLanguage() {
+  try {
+    const saved = localStorage.getItem('softie-language');
+    if (saved === 'en' || saved === 'zh') return saved;
+  } catch { /* Storage may be disabled. */ }
+  return document.documentElement.lang?.startsWith('en') ? 'en' : 'zh';
+}
 
 export function translate(language, key) {
   return messages[language]?.[key] ?? messages.zh[key];
 }
+

@@ -66,3 +66,27 @@ export function makeAirMaterial() {
   material.opacityNode = normalView.dot(positionViewDirection).abs().oneMinus().pow(3).mul(.45).add(glint.mul(.8)).add(.008).clamp(0, 1);
   return material;
 }
+
+export function makeBurstParticleMaterial(initialColor = '#f17fa9') {
+  const particleColor = new THREE.Color(initialColor);
+  const tint = uniform(particleColor);
+  const facing = normalView.dot(positionViewDirection).abs().clamp(0, 1);
+  const fresnel = facing.oneMinus().pow(2.0);
+  const glint = normalView.dot(vec3(-.3, .55, .78).normalize()).max(0).pow(36);
+
+  const material = new THREE.MeshPhysicalNodeMaterial({
+    colorNode: tint,
+    metalness: 0,
+    roughness: 0.06,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.2,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.opacityNode = float(0.68).add(fresnel.mul(0.28)).add(glint.mul(0.3)).clamp(0, 1);
+  material.emissiveNode = tint.mul(0.28).add(fresnel.mul(tint).mul(0.32)).add(glint.mul(color('#ffffff')).mul(0.42));
+  return { material, color: particleColor };
+}
+
