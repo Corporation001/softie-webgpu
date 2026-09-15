@@ -2,6 +2,7 @@ import './style.css';
 import './games/calm-match/style.css';
 import { mountGame, jelly } from './games/calm-match/view.js';
 import { preloadGameAssets, preloadGameModules, registerIdlePreload } from './games/calm-match/preload.js';
+import { getCurrentLanguage, translate } from './i18n.js';
 
 const home = document.querySelector('.playground');
 const game = document.createElement('main');
@@ -11,7 +12,11 @@ document.body.append(game);
 const overlay = document.createElement('div');
 overlay.className = 'calm-transition';
 overlay.hidden = true;
-overlay.innerHTML = `<div class="transition-jellies">${[0, 1, 2, 3].map(c => jelly(c)).join('')}</div><p>消消怨气，准点下班。</p>`;
+function updateOverlay() {
+  const lang = getCurrentLanguage();
+  overlay.innerHTML = `<div class="transition-jellies">${[0, 1, 2, 3].map(c => jelly(c)).join('')}</div><p>${translate(lang, 'cmTransition')}</p>`;
+}
+updateOverlay();
 document.body.append(overlay);
 let homeModule;
 let disposeGame = () => {};
@@ -39,13 +44,14 @@ function route() {
   game.hidden = !isGame;
   document.body.classList.toggle('playing-calm', isGame);
   document.dispatchEvent(new Event('softie-route'));
+  const lang = getCurrentLanguage();
   if (isGame) {
     document.querySelector('#loading').hidden = true;
-    document.title = '消消气 · softie';
+    document.title = translate(lang, 'cmTitle');
     preloadGameAssets({ timeoutMs: 3000 });
     disposeGame = mountGame(game);
   } else {
-    document.title = 'softie · 软乎乎。';
+    document.title = translate(lang, 'title');
     if (!homeModule) document.querySelector('#loading').hidden = false;
     homeModule ??= import('./main.js');
   }
@@ -62,6 +68,7 @@ document.addEventListener('click', event => {
     history.pushState({}, '', url.pathname);
     route();
     const token = navigation;
+    updateOverlay();
     overlay.classList.remove('fade-out');
     overlay.hidden = false;
     window.scrollTo(0, 0);
