@@ -4,3 +4,10 @@ dist/
 artifacts
 .playwright-mcp
 .codegraph/
+
+# 环境变量与敏感文件
+.env
+.env.*
+*.pem
+*.key
+*.cert
