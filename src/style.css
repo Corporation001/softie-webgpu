@@ -165,6 +165,7 @@ input {
   outline: 2px solid #171817;
   outline-offset: 1px;
 }
+.github-link,
 .sound-toggle {
   display: inline-flex;
   align-items: center;
@@ -180,20 +181,24 @@ input {
   outline: none;
   box-sizing: border-box;
   flex-shrink: 0;
+  text-decoration: none;
   transition:
     color 0.18s,
     background 0.18s,
     border-color 0.18s,
     transform 0.15s;
 }
+.github-link:hover,
 .sound-toggle:hover {
   color: #171817;
   background: #e8eae5;
   border-color: #c4c7bf;
 }
+.github-link:active,
 .sound-toggle:active {
   transform: scale(0.92);
 }
+.github-link:focus-visible,
 .sound-toggle:focus-visible {
   outline: 2px solid #171817;
   outline-offset: 2px;
@@ -213,6 +218,7 @@ input {
 .sound-toggle[aria-pressed="false"] .sound-icon-on {
   display: none;
 }
+.github-icon,
 .sound-icon {
   display: block;
   width: 20px;
@@ -220,6 +226,7 @@ input {
   pointer-events: none;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+.github-link:hover .github-icon,
 .sound-toggle:hover .sound-icon {
   transform: scale(1.08);
 }
@@ -1068,12 +1075,14 @@ input[type="range"]::-moz-range-thumb {
     height: 100%;
     font-size: 12px;
   }
+  .github-link,
   .sound-toggle {
     width: 38px;
     height: 38px;
     min-width: 38px;
     max-width: 38px;
   }
+  .github-icon,
   .sound-icon {
     width: 18px;
     height: 18px;
@@ -1371,12 +1380,14 @@ input[type="range"]::-moz-range-thumb {
     min-width: 38px;
     font-size: 11.5px;
   }
+  .github-link,
   .sound-toggle {
     width: 36px;
     height: 36px;
     min-width: 36px;
     max-width: 36px;
   }
+  .github-icon,
   .sound-icon {
     width: 16px;
     height: 16px;

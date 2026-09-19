@@ -1,5 +1,9 @@
 # softie · 软乎乎。
 
+<p align="center">
+  <img src="docs/images/promo-poster.png" alt="softie · 软乎乎" width="520" />
+</p>
+
 [![License: MIT](https://img.shields.io/github/license/yuanyang749/softie-webgpu)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-softie.520ai.site-4c6ef5)](https://softie.520ai.site)
 [![WebGPU](https://img.shields.io/badge/WebGPU-native-22863a)](https://www.w3.org/TR/webgpu/)
@@ -37,6 +41,21 @@
 
 - **双端响应式设计**：专为桌面端与移动端优化布局，触控区域舒适友好，无多余页面滚动。
 - **中英双语支持**：右上角一键无缝切换中 / 英文，状态实时记忆，切换无需重新加载。
+
+---
+
+## 📱 iOS Safari 开启 WebGPU 指引
+
+目前 iOS 系统的 WebGPU 处于实验性阶段（内置于 WebKit），在 iPhone / iPad Safari 浏览器中体验前需手动开启开关：
+
+1. 打开系统 **「设置 (Settings)」** ➔ 往下滑动找到并进入 **「Safari 浏览器」**；
+2. 滑动到最底部，点击进入 **「高级 (Advanced)」** ➔ 点击 **「WebKit 功能开关 (Feature Flags)」**；
+3. 在列表中找到 **`WebGPU`** 以及 **`WebGPU support for HDR`**，将开关切换为**开启（绿色）**；
+4. 返回 Safari 重新刷新网页，即可在手机端享受丝滑的 3D 软体捏捏乐与果冻消消气！
+
+<p align="center">
+  <img src="docs/images/ios-safari-webgpu.jpg" alt="iOS Safari 开启 WebGPU 指引" width="340" />
+</p>
 
 ---
 
